@@ -40,9 +40,12 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
+
+    'django.contrib.sites',
+
     'rest_framework',
     'corsheaders',
-    'haystack',
+    #'haystack',
     'bindsim',
     'bindfit',
 )
@@ -87,9 +90,9 @@ WSGI_APPLICATION = 'supramolecular.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE':   'django.db.backends.postgresql_psycopg2',
-        'NAME':     'supramolecular',
-        'USER':     'supramolecular',
-        'PASSWORD': 'Supramol3cular!',
+        'NAME':     'supra',
+        'USER':     'supra',
+        'PASSWORD': 'supra',
         'HOST':     '127.0.0.1',
         'PORT':     '5432',
     },
@@ -174,12 +177,13 @@ EMAIL_PORT          = 25
 
 # Haystack Search settings
 import os
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
-        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
-    },
-}
+#HAYSTACK_CONNECTIONS = {
+#    'default': {
+#        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+#        'PATH': os.path.join(os.path.dirname(__file__), 'whoosh_index'),
+#    },
+#}
 
 #HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.BaseSignalProcessor'
-HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+#HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+SITE_ID = 1

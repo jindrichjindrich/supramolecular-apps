@@ -21,8 +21,8 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework import status
 
-from haystack.query  import SearchQuerySet
-from haystack.inputs import AutoQuery 
+#from haystack.query  import SearchQuerySet
+#from haystack.inputs import AutoQuery 
 
 from django.contrib.sites.models import Site
 from django.conf import settings
@@ -570,6 +570,7 @@ class FitSearchView(APIView):
             # RealtimeSignalProcessor doesn't listen to the index_queryset
             # filtering in search_indexes.py.
             # Filtering added here as a temp fix.
+            '''
             matches = SearchQuerySet().filter(content=AutoQuery(query)).filter(searchable=True)
 
             # Preload matching DB objects
@@ -581,7 +582,7 @@ class FitSearchView(APIView):
             for match in matches.all():
                 summary = match.object.summary
                 summary_list.append(summary)
-
+           '''
         elif type(r['query']) is dict:
             # Advanced search (not implemented)
             # TODO: port to haystack, expand
