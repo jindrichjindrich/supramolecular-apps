@@ -174,7 +174,7 @@ class Fit(models.Model):
     meta_notes     = models.CharField(max_length=10000, blank=True)
 
     # Link to raw data used for fit
-    data = models.ForeignKey(Data)
+    data = models.ForeignKey(Data, on_delete=models.CASCADE)
 
     # Fit results
     # 1D array of fitted parameters
