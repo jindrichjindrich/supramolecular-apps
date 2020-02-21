@@ -1,0 +1,21 @@
+version: '3'
+# https://blog.atulr.com/docker-local-environment/
+# https://augustin-riedinger.fr/en/resources/using-docker-as-a-development-environment-part-1/
+#see pychemweb
+services:
+  supramolecular:
+    image: nginx:latest
+    #image: python:3.7
+    #build: . ## uncomment build and comment image if Dockerfile in the build folder should be used
+    #command: sh -c "pip install -r requirements/base.txt && python manage.py runserver 0.0.0.0:8000"
+    command: sh -c "apt update && apt install -y python3 python3-pip && ln -s /usr/bin/python3 /usr/bin/python && ln -s /usr/bin/pip3 /usr/bin/pip"
+    environment:
+      - PORT=8000
+    volumes:
+      - .:/pychemweb
+    ports:
+      - '8000:8000'
+    working_dir: /supramolecular-apps
+    volumes:
+      - .:/supramolecular-apps:cached
+

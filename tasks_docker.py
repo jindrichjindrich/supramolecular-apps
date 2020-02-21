@@ -28,31 +28,47 @@ def dr_build(c, project_name=cfg.PROJECT_NAME, dockerfile='Dockerfile', tagname=
     """Build the docker image for the django project
     """
     tagname, name = _get_tagname_name(project_name, tagname, '')
-    c.run(f'docker build . -f {dockerfile} --rm -t "{tagname}"')
+    cmd = f'docker build . -f {dockerfile} --rm -t "{tagname}"'
+    cfg.print_cmd(cmd)
+    c.run(cmd)
 
 @task
-def dr_run(c, project_name=cfg.PROJECT_NAME, tagname=None, name=None, project_folder=cfg.PROJECT_FOLDER, wing=True):
+def dr_run(c, project_name=cfg.PROJECT_NAME, tagname=None, name=None, project_folder=cfg.PROJECT_FOLDER, wing=True, rm=True, interactive=False):
     """Create and run the django project container from the image created by dr_build
+
+    wing - if True than attempt to share WingIDE volume will be made
+    rm   - if True than --rm option will be added to run command (removing the container when stopped)
+    interactive - if True than run the container interactively (console)
 
     docker run -v /D/projects/pychemweb:/pychemweb  -v "C:/Program Files (x86)/Wing Pro 7.2":/wingpro7   -p 4000:8000 pychemweb --name pychemweb-run
     """
     tagname, name = _get_tagname_name(project_name, tagname, name)
     wingdir= 'C:/Program Files (x86)/Wing Pro 7.2'
+    if rm:
+        rm = '--rm'
+    else:
+        rm = ''
+    if interactive:
+        interactive = '-it'
+    else:
+        interactive = ''
     if wing:
         if not os.path.exists(wingdir):
             wing = False
     if wing:
-        cmd = f'docker run -v /D/projects/{project_folder}:/{project_folder} -v "{wingdir}":/wingpro7 --name {name} -p 4000:8000 {tagname}'
+        cmd = f'docker run {rm} {interactive} -v /D/projects/{project_folder}:/{project_folder} -v "{wingdir}":/wingpro7 --name {name} -p 4000:8000 {tagname}'
     else:
-        cmd = f'winpty docker run --rm -it -v //D/projects/{project_folder}:/{project_folder} --name {name} -p 4000:8000 {tagname}'
-    print(f'cmd: {cmd}')
+        cmd = f'winpty docker run {rm} {interactive} -v /D/projects/{project_folder}:/{project_folder} --name {name} -p 4000:8000 {tagname}'
+    cfg.print_cmd(cmd)
     c.run(cmd)
 
 @task
 def dr_do(c, what, project_name=cfg.PROJECT_NAME, tagname=None, name=None):
     """Do commands on the contaner"""
     tagname, name = _get_tagname_name(project_name, tagname, name)
-    c.run(f'docker {what} {name}')
+    cmd = f'docker {what} {name}'
+    cfg.print_cmd(cmd)
+    c.run(cmd)
 
 @task
 def dr_rm(c, project_name=cfg.PROJECT_NAME, tagname=None, name=None):
@@ -77,7 +93,7 @@ def dr_restart(c, project_name=cfg.PROJECT_NAME, tagname=None, name=None):
 def dr_enter(c, project_name=cfg.PROJECT_NAME, tagname=None, name=None):
     tagname, name = _get_tagname_name(project_name, tagname, name)
     cmd = f'start winpty docker exec -it {name} bash'
-    print(f'cmd: {cmd}')
+    cfg.print_cmd(cmd)
     c.run(cmd)
 
 @task
@@ -91,16 +107,19 @@ def dr_logs(c, project_name=cfg.PROJECT_NAME, tagname=None, name=None):
 #=== 'docker-compose' related ===
 @task
 def dc_build(c, name=cfg.PROJECT_NAME):
-    """docker-compose build ... build the container defined in docker-compose.yml
-
-    Not needed if the container (of name) defined in yml file is usinge an 'image'
+    """docker-compose build ... build the containers defined in docker-compose.yml
+    Not needed if the container (of name) defined in yml file is using an 'image'
     """
-    c.run('docker-compose build')
+    cmd = 'docker-compose build'
+    cfg.print_cmd(cmd)
+    c.run(cmd)
 
 @task
 def dc_run(c, container_name=cfg.PROJECT_NAME):
     """docker-compose run ... run the container defined in docker-compose.yml"""
-    c.run(f'docker-compose run --rm --service-ports {container_name}')
+    cmd = f'docker-compose run --rm --service-ports {container_name}'
+    cfg.print_cmd(cmd)
+    c.run(cmd)
 
 @task
 def dc_enter(c, container_name=cfg.PROJECT_NAME):
@@ -112,7 +131,9 @@ def dc_enter(c, container_name=cfg.PROJECT_NAME):
     alias docker-enter="docker-compose run --rm --service-ports container_name /bin/bash"
 
     """
-    c.run(f'docker-compose run --rm --service-ports {container_name} /bin/bash ')
+    cmd = f'docker-compose run --rm --service-ports {container_name} /bin/bash '
+    cfg.print_cmd(cmd)
+    c.run(cmd)
 
 @task
 def dc_enter_again(c, container_name=cfg.PROJECT_NAME):
@@ -123,7 +144,9 @@ def dc_enter_again(c, container_name=cfg.PROJECT_NAME):
 
     alias docker-enter-again="docker-compose run --rm container_name /bin/bash"
     """
-    c.run(f'docker-compose run --rm {container_name} /bin/bash')
+    cmd = f'docker-compose run --rm {container_name} /bin/bash'
+    cfg.print_cmd(cmd)
+    c.run(cmd)
 #===/ 'docker-compose' related ===
 
 @task
@@ -134,7 +157,16 @@ def setup_wing_docker(c):
 
     https://wingware.com/doc/howtos/docker
     """
-    c.run('copy "C:\\Program Files (x86)\\Wing Pro 7.2\\wingdbstup.py" .')
+    cmd = 'copy "C:\\Program Files (x86)\\Wing Pro 7.2\\wingdbstup.py" .'
+    cfg.print_cmd(cmd)
+    c.run(cmd)
+
     #...change: kWingHostPort = 'host.docker.internal'
     # set env WINGHOME = '/wingpro7' (see Dockerfile)
-    c.run('copy "C:\\Users\\jindrich\\AppData\\Roaming\\Wing Pro 7\\wingdebugpw" .')
+
+    #c.run('copy "C:\\Users\\jindrich\\AppData\\Roaming\\Wing Pro 7\\wingdebugpw" .')
+    fn = os.path.join(os.environ['APPDATA'], 'Wing Pro 7', 'wingdebugpw')
+    cmd = f'copy "{fn}" .'
+    cfg.print_cmd(cmd)
+    c.run(cmd)
+
