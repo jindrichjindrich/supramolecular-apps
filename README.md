@@ -28,3 +28,6 @@ python manage.py createsuperuser
 * `python manage.py runserver`
 * This will serve the app at [http://localhost:8000](http://localhost:8000)
   by default.
+
+## Help:
+## http://supramolecular.org/help-and-guides/app-guides/
